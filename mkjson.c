@@ -8,11 +8,12 @@
 //If no longer needed, should be passed to free() by user
 char *mkjson( int count, ... )
 {
-	int i, intval, len, object, failure = 0;
+	int i, len, object, failure = 0;
 	char *json, *prefix, *strval, **chunks;
 	const char *key;
 	char type;
-	double dblval;
+	long long int intval;
+	long double dblval;
 	
 	va_list ap;
 	va_start( ap, count );
@@ -90,27 +91,33 @@ char *mkjson( int count, ... )
 				break;
 				
 			//Integer
+			case 'I':
 			case 'i':
-				intval = va_arg( ap, int );
-				len = snprintf( NULL, 0, "%s%d", prefix, intval );
+				if ( type == 'i' ) intval = va_arg( ap, int );
+				else intval = va_arg( ap, long long int );
+				len = snprintf( NULL, 0, "%s%Ld", prefix, intval );
 				if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
-				snprintf( chunks[i], len + 1, "%s%d", prefix, intval  );
+				snprintf( chunks[i], len + 1, "%s%Ld", prefix, intval  );
 				break;
 					
 			//Double
+			case 'D':
 			case 'd':
-				dblval = va_arg( ap, double );
-				len = snprintf( NULL, 0, "%s%f", prefix, dblval );
+				if ( type == 'd' ) dblval = va_arg( ap, double );
+				else dblval = va_arg( ap, long double );
+				len = snprintf( NULL, 0, "%s%Lf", prefix, dblval );
 				if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
-				snprintf( chunks[i], len + 1, "%s%f", prefix, dblval );
+				snprintf( chunks[i], len + 1, "%s%Lf", prefix, dblval );
 				break;
 				
 			//Double (exponential notation)
+			case 'E':
 			case 'e':
-				dblval = va_arg( ap, double );
-				len = snprintf( NULL, 0, "%s%e", prefix, dblval );
+				if ( type == 'e' ) dblval = va_arg( ap, double );
+				else dblval = va_arg( ap, long double );
+				len = snprintf( NULL, 0, "%s%Le", prefix, dblval );
 				if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
-				snprintf( chunks[i], len + 1, "%s%e", prefix, dblval );
+				snprintf( chunks[i], len + 1, "%s%Le", prefix, dblval );
 				break;
 				
 			//Boolean
