@@ -176,6 +176,9 @@ char *mkjson( int count, ... )
 				break;
 		}
 		
+		//Free prefix memory
+		free( prefix );
+		
 		//NULL chunk indicates failure
 		if ( chunks[i] == NULL ) failure = 1;
 	}
