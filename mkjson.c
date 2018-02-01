@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <ctype.h>
 
 //Return JSON string built from va_arg arguments
 //If no longer needed, should be passed to free() by user
@@ -37,17 +36,14 @@ char *mkjson( int count, ... )
 	for ( i = 0; i < count && !failure; i++ )
 	{
 		//Get type
-		type = tolower( va_arg( ap, int ) );
+		type = va_arg( ap, int );
 	
 		//Get key
 		if ( object )
 		{
 			key = va_arg( ap, char* );
-			if ( key == NULL )
-			{
-				key = "(nil)";
-				type =  'n';
-			}
+			failure = 1;
+			break;
 		}
 		
 		//Predict prefix length
