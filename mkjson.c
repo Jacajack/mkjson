@@ -49,12 +49,13 @@ char *mkjson( int count, ... )
 				break;
 			}
 		}
+		else key = "";
 		
 		#ifdef _GNU_SOURCE
 			if ( asprintf( &prefix, "%s%s%s%s", 
 				i != 0 ? ", " : "",            //No comma before first entry
 				object ? "\"" : "",            //Quote before key
-				object ? key : "",             //Key
+				key,                           //Key
 				object ? "\": " : "" ) == -1 ) //Quote and colon after key
 			{
 				failure = 1;
@@ -66,7 +67,7 @@ char *mkjson( int count, ... )
 			len = snprintf( NULL, 0, "%s%s%s%s", 
 				i != 0 ? ", " : "",     //No comma before first entry
 				object ? "\"" : "",     //Quote before key
-				object ? key : "",      //Key
+				key,                    //Key
 				object ? "\": " : "" ); //Quote and colon after key
 			
 			//Allocate prefix memory or indicate failure
@@ -81,7 +82,7 @@ char *mkjson( int count, ... )
 			snprintf( prefix, len + 1, "%s%s%s%s", 
 				i != 0 ? ", " : "",     //No comma before first entry
 				object ? "\"" : "",     //Quote before key
-				object ? key : "",      //Key
+				key,                    //Key
 				object ? "\": " : "" ); //Quote and colon after key
 		#endif
 			
