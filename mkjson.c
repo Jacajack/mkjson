@@ -84,12 +84,10 @@ char *mkjson( int count, ... )
 				strval = va_arg( ap, char* ); //This should be const, but it isn't because sometimes it needs to be freed
 				len = snprintf( NULL, 0, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" );
 				if ( ( chunks[i] = malloc( len + 1 ) ) != NULL )
-				{
 					snprintf( chunks[i], len + 1, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" );
 					
-					//Free string memory if necessary
-					if ( type == 'j' || type == 'f' ) free( strval );
-				}
+				//Free string memory if necessary
+				if ( type == 'j' || type == 'f' ) free( strval );
 				break;
 				
 			//Integer
