@@ -42,14 +42,17 @@ Each data entry consists of two or three elements, depending on whether it's an 
 The only exception is the JSON `null` value (indicated by type `n`) - in such case, the value argument should be skipped as well. Please see the table below for full list of supported data types.
 
 ### Data type specifiers
-|Data type|Expected&nbsp;value|Description|
+|Data type|Expected&nbsp;value&nbsp;type|Description|
 |:---:|---:|:---|
 |`s`|`const char*`|Normal string data|
 |`f`|`char*`|Normal string data, just like `s`, but **the pointer is freed**.|
 |`r`|`const char*`|Embeds JSON data. Works like `s`, but without quotes. The data is left untouched.|
 |`j`|`char*`|Embeds JSON data. Works like `r`, but **the pointer is freed**. Allows nested `mkjson` call! :tada:|
 |`i`|`int`|An integer|
+|`i`|`long long int`|Same as `i`|
 |`d`|`double`|A floating-point number|
+|`D`|`long double`|Same as `d`|
 |`e`|`double`|A floating-point number, like `d`, but exponential notation is used|
+|`E`|`long double`|Same as `e`|
 |`b`|`int`|A boolean value - translated to either `true` or `false`|
 |`n`|*nothing*|A JSON `null` value|
