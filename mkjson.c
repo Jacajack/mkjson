@@ -77,18 +77,18 @@ char *mkjson( int count, ... )
 		//Depending on entry type
 		switch ( type )
 		{
-			//String value or an embedded array (coming from mkjson call)
-			case 'j':
-			case 's':
-			case 'r':
+			case 'j': //Some JSON string (passed to free)
+			case 's': //A constant string
+			case 'r': //A string without quotes (raw data)
+			case 'f': //A string (passed to free)
 				strval = va_arg( ap, char* ); //This should be const, but it isn't because sometimes it needs to be freed
-				len = snprintf( NULL, 0, "%s%s%s%s", prefix, type == 's' ? "\"" : "", strval == NULL ? "(nil)" : strval, type == 's' ? "\"" : "" );
+				len = snprintf( NULL, 0, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" );
 				if ( ( chunks[i] = malloc( len + 1 ) ) != NULL )
 				{
-					snprintf( chunks[i], len + 1, "%s%s%s%s", prefix, type == 's' ? "\"" : "", strval == NULL ? "(nil)" : strval, type == 's' ? "\"" : "" );
+					snprintf( chunks[i], len + 1, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" );
 					
-					//If it's an nested mkjson call, free the memory it has allocated
-					if ( type == 'J' ) free( strval );
+					//Free string memory if necessary
+					if ( type == 'j' || type == 'f' ) free( strval );
 				}
 				break;
 				
