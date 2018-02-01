@@ -49,7 +49,7 @@ The only exception is the JSON `null` value (indicated by type `n`) - in such ca
 |`r`|`const char*`|Embeds JSON data. Works like `s`, but without quotes. The data is left untouched.|
 |`j`|`char*`|Embeds JSON data. Works like `r`, but **the pointer is freed**. Allows nested `mkjson` call! :tada:|
 |`i`|`int`|An integer|
-|`i`|`long long int`|Same as `i`|
+|`I`|`long long int`|Same as `i`|
 |`d`|`double`|A floating-point number|
 |`D`|`long double`|Same as `d`|
 |`e`|`double`|A floating-point number, like `d`, but exponential notation is used|
