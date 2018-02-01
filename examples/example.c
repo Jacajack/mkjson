@@ -5,7 +5,7 @@
 
 int main( )
 {
-	char *json = mkjson( 10,
+	char *json = mkjson( 11,
 		's', "mystr", "hello world!",
 		'i', "myinteger", 42,
 		'I', "longlong", 784ll,
