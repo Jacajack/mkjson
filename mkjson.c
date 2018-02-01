@@ -50,29 +50,40 @@ char *mkjson( int count, ... )
 			}
 		}
 		
-		//Predict prefix length
-		//asprintf is not a standard unfortunately :(
-		len = snprintf( NULL, 0, "%s%s%s%s", 
-			i != 0 ? ", " : "",    //No comma before first entry
-			object ? "\"" : "",     //Quote before key
-			object ? key : "",      //Key
-			object ? "\": " : "" ); //Quote and colon after key
+		#ifdef _GNU_SOURCE
+			if ( asprintf( &prefix, "%s%s%s%s", 
+				i != 0 ? ", " : "",            //No comma before first entry
+				object ? "\"" : "",            //Quote before key
+				object ? key : "",             //Key
+				object ? "\": " : "" ) == -1 ) //Quote and colon after key
+			{
+				failure = 1;
+				break;
+			}
+		#else
+			//Predict prefix length
+			//asprintf is not a standard unfortunately :(
+			len = snprintf( NULL, 0, "%s%s%s%s", 
+				i != 0 ? ", " : "",     //No comma before first entry
+				object ? "\"" : "",     //Quote before key
+				object ? key : "",      //Key
+				object ? "\": " : "" ); //Quote and colon after key
 			
-		//Allocate prefix memory or indicate failure
-		prefix = malloc( len + 1 );
-		if ( prefix == NULL )
-		{
-			failure = 1;
-			break;
-		}
+			//Allocate prefix memory or indicate failure
+			prefix = malloc( len + 1 );
+			if ( prefix == NULL )
+			{
+				failure = 1;
+				break;
+			}
 			
-		//Generate prefix - this has to match the sprintf above
-		snprintf( prefix, len + 1, "%s%s%s%s", 
-			i != 0 ? ", " : "",    //No comma before first entry
-			object ? "\"" : "",     //Quote before key
-			object ? key : "",      //Key
-			object ? "\": " : "" ); //Quote and colon after key
-			
+			//Generate prefix - this has to match the sprintf above
+			snprintf( prefix, len + 1, "%s%s%s%s", 
+				i != 0 ? ", " : "",     //No comma before first entry
+				object ? "\"" : "",     //Quote before key
+				object ? key : "",      //Key
+				object ? "\": " : "" ); //Quote and colon after key
+		#endif
 			
 		//Depending on entry type
 		switch ( type )
@@ -82,10 +93,13 @@ char *mkjson( int count, ... )
 			case 'r': //A string without quotes (raw data)
 			case 'f': //A string (passed to free)
 				strval = va_arg( ap, char* ); //This should be const, but it isn't because sometimes it needs to be freed
-				len = snprintf( NULL, 0, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" );
-				if ( ( chunks[i] = malloc( len + 1 ) ) != NULL )
-					snprintf( chunks[i], len + 1, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" );
-					
+				#ifdef _GNU_SOURCE
+					if ( asprintf( chunks + i, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" ) == -1 ) chunks[i] = NULL;
+				#else
+					len = snprintf( NULL, 0, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" );
+					if ( ( chunks[i] = malloc( len + 1 ) ) != NULL )
+						snprintf( chunks[i], len + 1, "%s%s%s%s", prefix, ( type == 's' || type == 'f' ) ? "\"" : "", strval == NULL ? "(nil)" : strval, ( type == 's' || type == 'f' ) ? "\"" : "" );
+				#endif
 				//Free string memory if necessary
 				if ( type == 'j' || type == 'f' ) free( strval );
 				break;
@@ -95,9 +109,13 @@ char *mkjson( int count, ... )
 			case 'i':
 				if ( type == 'i' ) intval = va_arg( ap, int );
 				else intval = va_arg( ap, long long int );
-				len = snprintf( NULL, 0, "%s%Ld", prefix, intval );
-				if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
-				snprintf( chunks[i], len + 1, "%s%Ld", prefix, intval  );
+				#ifdef _GNU_SOURCE
+					if ( asprintf( chunks + i, "%s%Ld", prefix, intval ) == -1 ) chunks[i] = NULL;
+				#else
+					len = snprintf( NULL, 0, "%s%Ld", prefix, intval );
+					if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
+					snprintf( chunks[i], len + 1, "%s%Ld", prefix, intval  );
+				#endif
 				break;
 					
 			//Double
@@ -105,9 +123,13 @@ char *mkjson( int count, ... )
 			case 'd':
 				if ( type == 'd' ) dblval = va_arg( ap, double );
 				else dblval = va_arg( ap, long double );
-				len = snprintf( NULL, 0, "%s%Lf", prefix, dblval );
-				if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
-				snprintf( chunks[i], len + 1, "%s%Lf", prefix, dblval );
+				#ifdef _GNU_SOURCE
+					if ( asprintf( chunks + i, "%s%Lf", prefix, dblval ) == -1 ) chunks[i] = NULL;
+				#else
+					len = snprintf( NULL, 0, "%s%Lf", prefix, dblval );
+					if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
+					snprintf( chunks[i], len + 1, "%s%Lf", prefix, dblval );
+				#endif
 				break;
 				
 			//Double (exponential notation)
@@ -115,24 +137,36 @@ char *mkjson( int count, ... )
 			case 'e':
 				if ( type == 'e' ) dblval = va_arg( ap, double );
 				else dblval = va_arg( ap, long double );
-				len = snprintf( NULL, 0, "%s%Le", prefix, dblval );
-				if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
-				snprintf( chunks[i], len + 1, "%s%Le", prefix, dblval );
+				#ifdef _GNU_SOURCE
+					if ( asprintf( chunks + i, "%s%Le", prefix, dblval ) == -1 ) chunks[i] = NULL;
+				#else
+					len = snprintf( NULL, 0, "%s%Le", prefix, dblval );
+					if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
+					snprintf( chunks[i], len + 1, "%s%Le", prefix, dblval );
+				#endif
 				break;
 				
 			//Boolean
 			case 'b':
 				intval = va_arg( ap, int );
-				len = snprintf( NULL, 0, "%s%s", prefix, intval ? "true" : "false" );
-				if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
-				snprintf( chunks[i], len + 1, "%s%s", prefix, intval ? "true" : "false" );
+				#ifdef _GNU_SOURCE
+					if ( asprintf( chunks + i, "%s%s", prefix, intval ? "true" : "false" ) == -1 ) chunks[i] = NULL;
+				#else
+					len = snprintf( NULL, 0, "%s%s", prefix, intval ? "true" : "false" );
+					if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
+					snprintf( chunks[i], len + 1, "%s%s", prefix, intval ? "true" : "false" );
+				#endif
 				break;
 				
 			//JSON null
 			case 'n':
-				len = snprintf( NULL, 0, "%snull", prefix );
-				if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
-				snprintf( chunks[i], len + 1, "%snull", prefix);
+				#ifdef _GNU_SOURCE
+					if ( asprintf( chunks + i, "%snull", prefix ) == -1 ) chunks[i] = NULL;
+				#else
+					len = snprintf( NULL, 0, "%snull", prefix );
+					if ( ( chunks[i] = malloc( len + 1 ) ) == NULL ) break;
+					snprintf( chunks[i], len + 1, "%snull", prefix);
+				#endif
 				break;
 			
 			//Bad type specifier

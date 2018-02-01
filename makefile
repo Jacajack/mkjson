@@ -2,6 +2,10 @@ CFLAGS = -Wall -Os -I.
 CC = gcc
 AR = ar
 
+ifneq ($(ASPRINTF),)
+CFLAGS += -D_GNU_SOURCE
+endif
+
 #Builds object and a static library file
 all: clean
 	$(CC) $(CFLAGS) -c mkjson.c -o mkjson.o
