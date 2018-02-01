@@ -42,8 +42,11 @@ char *mkjson( int count, ... )
 		if ( object )
 		{
 			key = va_arg( ap, char* );
-			failure = 1;
-			break;
+			if ( key == NULL )
+			{
+				failure = 1;
+				break;
+			}
 		}
 		
 		//Predict prefix length
