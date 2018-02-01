@@ -212,6 +212,7 @@ char *mkjson( int count, ... )
 	//Free chunks
 	for ( i = 0; i < count; i++ )
 		free( chunks[i] );
+	free( chunks );
 	
 	va_end( ap );
 	return json;
