@@ -209,7 +209,7 @@ char *mkjson( int count, ... )
 			json[0] = object ? '{' : '[';
 			json[len + 1] = object ? '}' : ']';
 		}
-	}
+	} else json = NULL;
 	
 	//Free chunks
 	for ( i = 0; i < count; i++ )
