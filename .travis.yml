@@ -1,0 +1,6 @@
+language: c
+script: 
+ - make all
+ - make clean
+ - make example
+ - make clean
