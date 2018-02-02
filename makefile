@@ -2,24 +2,30 @@ CFLAGS = -Wall -Os -I.
 CC = gcc
 AR = ar
 
-ifneq ($(ASPRINTF),)
+#USE_ASPRINTF make flag can be used in order to encourage asprintf use inside the library
+ifeq ($(USE_ASPRINTF),1)
 CFLAGS += -D_GNU_SOURCE
 endif
 
 #Builds object and a static library file
-all: clean
-	$(CC) $(CFLAGS) -c mkjson.c -o mkjson.o
-	$(AR) -cvq libmkjson.a mkjson.o
-	$(AR) -t libmkjson.a
+all: clean force
+	$(CC) $(CFLAGS) -c mkjson.c -o obj/mkjson.o
+	$(AR) -cvq lib/libmkjson.a obj/mkjson.o
+	$(AR) -t lib/libmkjson.a
 
 #Normal cleanup
 clean:
-	-rm mkjson.o
-	-rm libmkjson.a
+	-rm -r obj
+	-rm -r lib
 	-rm example
 
-#Build the example snippet	
+#Environment init
+force:
+	-mkdir obj
+	-mkdir lib
+
+#Build the example snippet
 example: all
-	gcc -o example examples/example.c -I. -L. -lmkjson
+	gcc -o example examples/example.c -I. -Llib -lmkjson
 
 	
