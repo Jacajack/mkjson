@@ -25,20 +25,16 @@ This example produces following JSON string
 ```
 
 ## How to use?
-`mkjson`'s working principle is very simple. It only takes `otype` value indicating whether the data is going to be an object or an array, the `count` of data values to follow and the actual data to encode. The function returns an allocated JSON string - when no longer needed, you should pass it to `free()`. Valid values for `otype` are `MKJSON_ARR` and `MKJSON_OBJ` macros.
+`mkjson`'s working principle is incredibly simple. It only takes `otype` value indicating whether the data is going to be an object (`MKJSON_OBJ` macro) or an array (`MKJSON_ARR` macro), the `count` of data values to follow and the actual data to encode. The function returns an automatically allocated JSON string - when no longer needed, you should pass it to `free()`.
 
 ```cpp
 char *mkjson( int otype, int length, ... )
 ```
 
-Each data entry consists of two or three elements, depending on whether it's an array or an object:
-**type**, (**key**), **value**
-
-**`type`**  - a `char` (actually, it's treated as `int`) indicating type of JSON data to follow.<br>
-**`key`** - a `const char*` used as key in JSON object - this should skipped when an array is generated.<br>
-**`value`** - the value written into the array or object. Its type must match with the one indicated by `type`. Please see the table below for full list of supported data types.
-
-The only exception is the JSON `null` value (indicated by type `n`) - in such case, the value argument should be skipped as well. 
+As you may have noticed on the example above, each data entry consists of two or three elements, depending on whether it's an array or an object:<br>
+ - **`type`**  - a `char` (actually, it's an `int`) indicating the type of JSON data to follow.<br>
+ - **`key`** - a `const char*` used as key in JSON object - **this should skipped when an array is generated**.<br>
+ - **`value`** - the value written into the array or object. Its type must match with the one indicated by `type`. Please see the table below for the full list of supported data types.
 
 ### Data type specifiers
 |Data type|Expected&nbsp;value&nbsp;type|Description|
@@ -54,4 +50,4 @@ The only exception is the JSON `null` value (indicated by type `n`) - in such ca
 |`e`|`double`|A floating-point number, like `d`, but exponential notation is used|
 |`E`|`long double`|Same as `e`|
 |`b`|`int`|A boolean value - translated to either `true` or `false`|
-|`n`|*nothing*|A JSON `null` value|
+|`n`|*nothing*|A JSON `null` value - **the `value` argument should be skipped**|
