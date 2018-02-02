@@ -1,3 +1,11 @@
+/* mkjson.c - a part of mkjson library
+ *
+ * Copyright (C) 2018 Jacek Wieczorek
+ *
+ * This software may be modified and distributed under the terms
+ * of the MIT license.	See the LICENSE file for details.
+ */
+
 #include <mkjson.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,9 +16,7 @@
 //I don't want the name to collide with anything
 static int allsprintf( char **strp, const char *fmt, ... )
 {
-	int len;
-	char *buf;
-	
+	int len;	
 	va_list ap;
 	va_start( ap, fmt );
 	
@@ -19,6 +25,7 @@ static int allsprintf( char **strp, const char *fmt, ... )
 		len = vasprintf( strp, fmt, ap );
 	#else
 		//Or do it the manual way
+		char *buf;
 		len = vsnprintf( NULL, 0, fmt, ap );
 		if ( len >= 0 )
 		{
