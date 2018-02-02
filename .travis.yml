@@ -1,6 +1,15 @@
 language: c
+branches:
+ except:
+  - packaging
+install:
+ - pip install --user cpp-coveralls
 script: 
  - make all
  - make clean
  - make example
  - make clean
+ - gcc -Wall -g --coverage -I. mkjson.c examples/example.c -o coverage
+ - ./coverage
+after_success:
+ - coveralls --verbose --exclude examples/example.c
