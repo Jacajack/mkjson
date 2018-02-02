@@ -1,5 +1,7 @@
 # mkjson
-A super-simple C JSON encoder.
+[![The MIT License](https://img.shields.io/badge/license-MIT-orange.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+[![Travis CI](https://img.shields.io/travis/Jacajack/mkjson/master.svg?style=flat-square)](https://travis-ci.org/Jacajack/mkjson)
+<br>A super-simple C JSON encoder.
 
 `mkjson` is a single-function C library intended to make JSON strings building in C easier. Making use of variable length argument lists, it allows you to create complex JSON objects just in one line.
 
