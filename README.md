@@ -5,11 +5,10 @@ A super-simple C JSON encoder.
 
 ## Example
 ```cpp
-char *json = mkjson( 3,
+char *json = mkjson( MKJSON_OBJ, 3,
 		's', "this",    "is really simple!",
 		'i', "myint",   42,
-		
-		'j', "object",  mkjson( -3, 
+		'j', "object",  mkjson( MKJSON_ARR, 3, 
 				'e', 4.75e-2,
 				'n',
 				'b', 1
@@ -24,22 +23,20 @@ This example produces following JSON string
 ```
 
 ## How to use?
-`mkjson`'s working principle is very simple. It only takes an integer argument - the length of JSON array/object followed by the data to encode. Positive `count` indicates JSON string is going to be an object and negative indicates an array. The function returns an allocated JSON string. When no longer needed, you should pass it to `free()`.
+`mkjson`'s working principle is very simple. It only takes `otype` value indicating whether the data is going to be an object or an array, the `count` of data values to follow and the actual data to encode. The function returns an allocated JSON string - when no longer needed, you should pass it to `free()`. Valid values for `otype` are `MKJSON_ARR` and `MKJSON_OBJ` macros.
 
-This is the function prototype:
 ```cpp
-char *mkjson( int count, ... )
+char *mkjson( int otype, int length, ... )
 ```
 
 Each data entry consists of two or three elements, depending on whether it's an array or an object:
-```
-(char) type , [(const char*) key], value
-```
-**`type`**  - a character indicating type of JSON data to follow.<br>
-**`key`** - a string used as key in JSON object - this should skipped when an array is generated.<br>
-**`value`** - the value written into the array or object. Its type must match with the one indicated by `type`.
+**type**, (**key**), **value**
 
-The only exception is the JSON `null` value (indicated by type `n`) - in such case, the value argument should be skipped as well. Please see the table below for full list of supported data types.
+**`type`**  - a `char` (actually, it's treated as `int`) indicating type of JSON data to follow.<br>
+**`key`** - a `const char*` used as key in JSON object - this should skipped when an array is generated.<br>
+**`value`** - the value written into the array or object. Its type must match with the one indicated by `type`. Please see the table below for full list of supported data types.
+
+The only exception is the JSON `null` value (indicated by type `n`) - in such case, the value argument should be skipped as well. 
 
 ### Data type specifiers
 |Data type|Expected&nbsp;value&nbsp;type|Description|
