@@ -5,7 +5,7 @@
 
 int main( )
 {
-	char *json = mkjson( MKJSON_OBJ, 12,
+	char *json = mkjson( MKJSON_OBJ, 13,
 		's', "mystr", "hello world!",
 		'i', "myinteger", 42,
 		'I', "longlong", 784ll,
@@ -15,6 +15,7 @@ int main( )
 		'E', "exponentialL", 3e104l,	
 		'b', "boolean", 1,
 		'n', "nullvalue",
+		'r', "alsonull", NULL,
 		'j', "object", mkjson( MKJSON_OBJ, 1, 
 			'i', "something", 45 
 			),
