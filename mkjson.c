@@ -143,7 +143,7 @@ char *mkjson( enum mkjson_container_type otype, int count, ... )
 				if ( vtype == MKJSON_IGN_DOUBLE )
 					(void) va_arg( ap, double );
 				else
-					(void) va_arg( ap, long long int );
+					(void) va_arg( ap, long double );
 				chunks[i] = strdup( "" );
 				break;
 
