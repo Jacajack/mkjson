@@ -1,9 +1,8 @@
 # mkjson
 [![The MIT License](https://img.shields.io/badge/license-MIT-orange.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 [![Travis CI](https://img.shields.io/travis/Jacajack/mkjson/master.svg?style=flat-square)](https://travis-ci.org/Jacajack/mkjson)
-<br>A super-simple C JSON encoder.
 
-`mkjson` is a single-function C library intended to make building  JSON strings in C easier. Making use of variable length argument lists, it allows you to create complex JSON objects in just one line.
+`mkjson` is a simple and flexible single-function C library intended to make building  JSON strings in C easier. Making use of variable length argument lists, it allows you to create complex JSON objects in just one line.
 
 ## Example
 ```cpp
@@ -19,14 +18,14 @@ char *json = mkjson( MKJSON_OBJ, 3,
 		);
 ```
 
-This example produces following JSON string
+This example produces following JSON string:
 ```json
 {"this": "is really simple!", "myint": 42, "object": [4.750000e-02, null, true]}
 
 ```
 
 ## How to use?
-`mkjson`'s working principle is incredibly simple. It only takes `otype` value indicating whether the data is going to be an object (`MKJSON_OBJ`) or an array (`MKJSON_ARR`), the `count` of data values to follow and the actual data to encode. The function returns an automatically allocated JSON string - when no longer needed, it should be passed to `free()`.
+`mkjson`'s working principle is very simple. The function takes `otype` value indicating whether the data is going to be an object (`MKJSON_OBJ`) or an array (`MKJSON_ARR`), the `count` of data entries to follow and the actual data to encode. The function returns an automatically allocated JSON string - when no longer needed, it should be passed to `free()`.
 
 ```cpp
 char *mkjson( enum mkjson_container_type otype, int length, ... )
