@@ -56,13 +56,13 @@ static int allsprintf( char **strp, const char *fmt, ... )
 
 // Return JSON string built from va_arg arguments
 // If no longer needed, should be passed to free() by user
-char *mkjson( int otype, int count, ... )
+char *mkjson( enum mkjson_container_type otype, int count, ... )
 {
 	int i, len, failure = 0;
 	char *json, *prefix, **chunks;
 
 	// Value - type and data
-	int vtype;
+	enum mkjson_value_type vtype;
 	const char *key;
 	long long int intval;
 	long double dblval;
@@ -85,7 +85,7 @@ char *mkjson( int otype, int count, ... )
 	for ( i = 0; i < count && !failure; i++ )
 	{
 		// Get value type
-		vtype = va_arg( ap, int );
+		vtype = va_arg( ap, enum mkjson_value_type );
 
 		// Get key
 		if ( otype == MKJSON_OBJ )
