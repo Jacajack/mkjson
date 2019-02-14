@@ -58,8 +58,8 @@ static int allsprintf( char **strp, const char *fmt, ... )
 // If no longer needed, should be passed to free() by user
 char *mkjson( enum mkjson_container_type otype, int count, ... )
 {
-	int i, len, failure = 0;
-	char *json, *prefix, **chunks;
+	int i, len, goodchunks = 0, failure = 0;
+	char *json, *prefix, **chunks, ign;
 
 	// Value - type and data
 	enum mkjson_value_type vtype;
@@ -100,8 +100,7 @@ char *mkjson( enum mkjson_container_type otype, int count, ... )
 		else key = "";
 
 		// Generate prefix
-		if ( allsprintf( &prefix, "%s%s%s%s",
-			i != 0 ? ", " : "",                         // No comma before first entry
+		if ( allsprintf( &prefix, "%s%s%s",
 			otype == MKJSON_OBJ ? "\"" : "",            // Quote before key
 			key,                                        // Key
 			otype == MKJSON_OBJ ? "\": " : "" ) == -1 ) // Quote and colon after key
@@ -111,20 +110,21 @@ char *mkjson( enum mkjson_container_type otype, int count, ... )
 		}
 
 		// Depending on value type
+		ign = 0;
 		switch ( vtype )
 		{
 			// Ignore string / JSON data
 			case MKJSON_IGN_STRING:
 			case MKJSON_IGN_JSON:
 				(void) va_arg( ap, const char* );
-				chunks[i] = strdup( "" );
+				ign = 1;
 				break;
 
 			// Ignore string / JSON data and pass the pointer to free
 			case MKJSON_IGN_STRING_FREE:
 			case MKJSON_IGN_JSON_FREE:
 				free( va_arg( ap, char* ) );
-				chunks[i] = strdup( "" );
+				ign = 1;
 				break;
 
 			// Ignore int / long long int
@@ -134,7 +134,7 @@ char *mkjson( enum mkjson_container_type otype, int count, ... )
 					(void) va_arg( ap, int );
 				else
 					(void) va_arg( ap, long long int );
-				chunks[i] = strdup( "" );
+				ign = 1;
 				break;
 
 			// Ignore double / long double
@@ -144,18 +144,18 @@ char *mkjson( enum mkjson_container_type otype, int count, ... )
 					(void) va_arg( ap, double );
 				else
 					(void) va_arg( ap, long double );
-				chunks[i] = strdup( "" );
+				ign = 1;
 				break;
 
 			// Ignore boolean
 			case MKJSON_IGN_BOOL:
 				(void) va_arg( ap, int );
-				chunks[i] = strdup( "" );
+				ign = 1;
 				break;
 
 			// Ignore null value
 			case MKJSON_IGN_NULL:
-				chunks[i] = strdup( "" );
+				ign = 1;
 				break;
 
 			// A null-terminated string
@@ -247,8 +247,12 @@ char *mkjson( enum mkjson_container_type otype, int count, ... )
 		// Free prefix memory
 		free( prefix );
 
-		// NULL chunk indicates failure
-		if ( chunks[i] == NULL ) failure = 1;
+		// NULL chunk without ignore flag indicates failure
+		if ( !ign && chunks[i] == NULL ) failure = 1;
+
+		// NULL chunk now indicates ignore flag
+		if ( ign ) chunks[i] = NULL;
+		else goodchunks++;
 	}
 
 	// We won't use ap anymore
@@ -260,20 +264,35 @@ char *mkjson( enum mkjson_container_type otype, int count, ... )
 		// Get total length (this is without NUL byte)
 		len = 0;
 		for ( i = 0; i < count; i++ )
+			if ( chunks[i] != NULL )
 				len += strlen( chunks[i] );
 
+		// Total length = Chunks length + 2 brackets + separators
+		if ( goodchunks == 0 ) goodchunks = 1;
+		len = len + 2 + ( goodchunks - 1 ) * 2;
+
 		// Allocate memory for the whole thing
-		// Total length + NUL byte + 2 brackets
-		json = calloc( len + 1 + 2, sizeof( char ) );
+		json = calloc( len + 1, sizeof( char ) );
 		if ( json != NULL )
 		{
 			// Merge chunks (and do not overwrite the first bracket)
 			for ( i = 0; i < count; i++ )
-				strcat( json + 1, chunks[i] );
+			{
+				// Add separators:
+				// - not on the begining
+				// - always after valid chunk
+				// - between two valid chunks
+				// - between valid and ignored chunk if the latter isn't the last one
+				if ( i != 0 && chunks[i - 1] != NULL && ( chunks[i] != NULL || ( chunks[i] == NULL && i != count - 1 ) ) )
+					strcat( json + 1, ", ");
+
+				if ( chunks[i] != NULL )
+					strcat( json + 1, chunks[i] );
+			}
 
 			// Add proper brackets
 			json[0] = otype == MKJSON_OBJ ? '{' : '[';
-			json[len + 1] = otype == MKJSON_OBJ ? '}' : ']';
+			json[len - 1] = otype == MKJSON_OBJ ? '}' : ']';
 		}
 	}
 	else json = NULL;

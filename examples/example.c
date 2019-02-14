@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
 #include "mkjson.h"
 
 int main( )
 {
-	char *json = mkjson( MKJSON_OBJ, 13,
+	time_t dummy = time( NULL );
+
+	char *json = mkjson( MKJSON_OBJ, 15,
 		MKJSON_STRING,      "mystr", "hello world!",
 		MKJSON_INT,         "myinteger", 42,
 		MKJSON_LLINT,       "longlong", 784ll,
@@ -28,8 +31,30 @@ int main( )
 			MKJSON_BOOL,        0
 			),
 
-		MKJSON_JSON_FREE,   "empty", mkjson( MKJSON_OBJ, 0 )
-			);
+		MKJSON_JSON_FREE,   "empty", mkjson( MKJSON_OBJ, 7,
+			MKJSON_IGN_STRING,      "mystr", "hello world!",
+			MKJSON_IGN_INT,         "myinteger", 42,
+			MKJSON_IGN_LLINT,       "longlong", 784ll,
+			MKJSON_IGN_DOUBLE,      "double", 1.4481,
+			MKJSON_IGN_LDOUBLE,     "longdbl", 1.22l,
+			MKJSON_IGN_BOOL,        "boolean", 1,
+			MKJSON_IGN_NULL,        "nullvalue"
+		),
+
+		MKJSON_JSON_FREE,   "silly", mkjson( MKJSON_ARR, 4,
+			dummy % 2 == 0 ? MKJSON_INT : MKJSON_IGN_INT,  123,
+			dummy % 2 == 1 ? MKJSON_INT : MKJSON_IGN_INT,  456,
+			dummy % 2 == 0 ? MKJSON_INT : MKJSON_IGN_INT,  456,
+			dummy % 2 == 1 ? MKJSON_INT : MKJSON_IGN_INT,  123
+			),
+
+		MKJSON_JSON_FREE,   "silly2", mkjson( MKJSON_OBJ, 4,
+			dummy % 2 == 0 ? MKJSON_INT : MKJSON_IGN_INT, "A", 123,
+			dummy % 2 == 1 ? MKJSON_INT : MKJSON_IGN_INT, "B", 456,
+			dummy % 2 == 0 ? MKJSON_INT : MKJSON_IGN_INT, "C", 456,
+			dummy % 2 == 1 ? MKJSON_INT : MKJSON_IGN_INT, "D", 123
+			)
+	);
 
 	//Just print it and then free
 	assert( json != NULL );
