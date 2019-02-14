@@ -9,7 +9,7 @@ int main( )
 {
 	time_t dummy = time( NULL );
 
-	char *json = mkjson( MKJSON_OBJ, 15,
+	char *json = mkjson( MKJSON_OBJ, 16,
 		MKJSON_STRING,      "mystr", "hello world!",
 		MKJSON_INT,         "myinteger", 42,
 		MKJSON_LLINT,       "longlong", 784ll,
@@ -41,7 +41,12 @@ int main( )
 			MKJSON_IGN_NULL,        "nullvalue"
 		),
 
-		MKJSON_JSON_FREE,   "silly", mkjson( MKJSON_ARR, 4,
+		MKJSON_JSON_FREE,   "silly0", mkjson( MKJSON_OBJ, 2,
+			dummy % 2 ? MKJSON_INT : MKJSON_IGN_INT,   "something", 777,
+			dummy % 2 ? MKJSON_IGN_NULL : MKJSON_NULL, "something"
+			),
+
+		MKJSON_JSON_FREE,   "silly1", mkjson( MKJSON_ARR, 4,
 			dummy % 2 == 0 ? MKJSON_INT : MKJSON_IGN_INT,  123,
 			dummy % 2 == 1 ? MKJSON_INT : MKJSON_IGN_INT,  456,
 			dummy % 2 == 0 ? MKJSON_INT : MKJSON_IGN_INT,  456,
