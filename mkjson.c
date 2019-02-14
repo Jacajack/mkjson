@@ -16,10 +16,10 @@
 //I don't want the name to collide with anything
 static int allsprintf( char **strp, const char *fmt, ... )
 {
-	int len;	
+	int len;
 	va_list ap;
 	va_start( ap, fmt );
-	
+
 	#ifdef _GNU_SOURCE
 		//Just handle everything to vasprintf, if it's available
 		len = vasprintf( strp, fmt, ap );
@@ -35,7 +35,7 @@ static int allsprintf( char **strp, const char *fmt, ... )
 				//Hopefully, that's the right way to do it
 				va_end( ap );
 				va_start( ap, fmt );
-				
+
 				//Write and return the data
 				len = vsnprintf( buf, len, fmt, ap );
 				if ( len >= 0 )
@@ -49,7 +49,7 @@ static int allsprintf( char **strp, const char *fmt, ... )
 			}
 		}
 	#endif
-	
+
 	va_end( ap );
 	return len;
 }
@@ -60,23 +60,23 @@ char *mkjson( int otype, int count, ... )
 {
 	int i, len, failure = 0;
 	char *json, *prefix, **chunks;
-	
+
 	//Value - type and data
 	int vtype;
 	const char *key;
 	long long int intval;
 	long double dblval;
 	char *strval;
-	
+
 	//Since v0.9 count cannot be a negative value and datatype is indicated by a separate argument
 	//Since I'm not sure whether it's right to put assertions in libraries, the next line is commented out
 	//assert( count >= 0 && "After v0.9 negative count is prohibited; please use otype argument instead" );
 	if ( count < 0 || ( otype != MKJSON_OBJ && otype != MKJSON_ARR ) ) return NULL;
-	
+
 	//Allocate chunk pointer array - on standard platforms each one should be NULL
 	chunks = calloc( count, sizeof( char* ) );
 	if ( chunks == NULL ) return NULL;
-	
+
 	//This should be rather at the point of no return
 	va_list ap;
 	va_start( ap, count );
@@ -86,7 +86,7 @@ char *mkjson( int otype, int count, ... )
 	{
 		//Get value type
 		vtype = va_arg( ap, int );
-	
+
 		//Get key
 		if ( otype == MKJSON_OBJ )
 		{
@@ -98,7 +98,7 @@ char *mkjson( int otype, int count, ... )
 			}
 		}
 		else key = "";
-		
+
 		//Generate prefix
 		if ( allsprintf( &prefix, "%s%s%s%s",
 			i != 0 ? ", " : "",                         //No comma before first entry
@@ -109,7 +109,7 @@ char *mkjson( int otype, int count, ... )
 			failure = 1;
 			break;
 		}
-	
+
 		//Depending on value type
 		switch ( vtype )
 		{
@@ -121,7 +121,7 @@ char *mkjson( int otype, int count, ... )
 				if ( allsprintf( chunks + i, "%s%s%s%s", prefix, ( vtype == 's' || vtype == 'f' ) ? "\"" : "", strval == NULL ? "null" : strval, ( vtype == 's' || vtype == 'f' ) ? "\"" : "" ) == -1 ) chunks[i] = NULL;
 				if ( vtype == 'j' || vtype == 'f' ) free( strval ); //Free string memory if requested
 				break;
-				
+
 			//Integer
 			case 'I':
 			case 'i':
@@ -129,7 +129,7 @@ char *mkjson( int otype, int count, ... )
 				else intval = va_arg( ap, long long int );
 				if ( allsprintf( chunks + i, "%s%Ld", prefix, intval ) == -1 ) chunks[i] = NULL;
 				break;
-					
+
 			//Double
 			case 'D':
 			case 'd':
@@ -137,7 +137,7 @@ char *mkjson( int otype, int count, ... )
 				else dblval = va_arg( ap, long double );
 				if ( allsprintf( chunks + i, "%s%Lf", prefix, dblval ) == -1 ) chunks[i] = NULL;
 				break;
-				
+
 			//Double (exponential notation)
 			case 'E':
 			case 'e':
@@ -145,34 +145,34 @@ char *mkjson( int otype, int count, ... )
 				else dblval = va_arg( ap, long double );
 				if ( allsprintf( chunks + i, "%s%Le", prefix, dblval ) == -1 ) chunks[i] = NULL;
 				break;
-				
+
 			//Boolean
 			case 'b':
 				intval = va_arg( ap, int );
 				if ( allsprintf( chunks + i, "%s%s", prefix, intval ? "true" : "false" ) == -1 ) chunks[i] = NULL;
 				break;
-				
+
 			//JSON null
 			case 'n':
 				if ( allsprintf( chunks + i, "%snull", prefix ) == -1 ) chunks[i] = NULL;
 				break;
-			
+
 			//Bad type specifier
 			default:
 				chunks[i] = NULL;
 				break;
 		}
-		
+
 		//Free prefix memory
 		free( prefix );
-		
+
 		//NULL chunk indicates failure
 		if ( chunks[i] == NULL ) failure = 1;
 	}
-	
+
 	//We won't use ap anymore
 	va_end( ap );
-	
+
 	//If everything is fine, merge chunks and create full JSON table
 	if ( !failure )
 	{
@@ -183,7 +183,7 @@ char *mkjson( int otype, int count, ... )
 			if ( chunks[i] != NULL ) //That should be ALWAYS true
 				len += strlen( chunks[i] );
 		}
-		
+
 		//Allocate memory for the whole thing
 		json = calloc( len + 1 + 2, sizeof( char ) );
 		if ( json != NULL )
@@ -194,18 +194,18 @@ char *mkjson( int otype, int count, ... )
 				if ( chunks[i] != NULL ) //That should be ALWAYS true
 					strcat( json + 1, chunks[i] );
 			}
-	
+
 			//Add proper brackets
 			json[0] = otype == MKJSON_OBJ ? '{' : '[';
 			json[len + 1] = otype == MKJSON_OBJ ? '}' : ']';
 		}
 	} else json = NULL;
-	
+
 	//Free chunks
 	for ( i = 0; i < count; i++ )
 		free( chunks[i] );
 	free( chunks );
-	
+
 	return json;
 }
 
